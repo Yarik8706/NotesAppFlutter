@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:notes_app/modal_class/notes.dart';
 
-class NotesSearch extends SearchDelegate<Note> {
+class NotesSearchScreen extends SearchDelegate<Note> {
   final List<Note> notes;
   List<Note> filteredNotes = [];
 
-  NotesSearch({this.notes});
+  NotesSearchScreen({this.notes});
 
   @override
   ThemeData appBarTheme(BuildContext context) {

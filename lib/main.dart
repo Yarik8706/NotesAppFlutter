@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:notes_app/pages/main_notes_page.dart';
-import 'package:notes_app/pages/trash_notes_page.dart';
+import 'package:notes_app/screens/notes_screen.dart';
+import 'package:notes_app/screens/trash_notes_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -12,11 +12,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'NoteKeeper',
+      title: 'Заметки',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.grey,
-        cursorColor: Colors.grey,
+        // cursorColor: Colors.grey,
         textTheme: const TextTheme(
           headline5: TextStyle(
               fontFamily: 'Sans',
@@ -46,7 +46,7 @@ class MyApp extends StatelessWidget {
       ),
       initialRoute: '/note_list',
       routes: {
-        '/note_list': (context) => const MainNotesPage(),
+        '/note_list': (context) => const NotesScreen(),
         '/trash_note_list': (context) => const TrashNotesPage()
       },
     );

@@ -3,67 +3,76 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:notes_app/database/note_database.dart';
 import 'package:notes_app/modal_class/notes.dart';
-import 'package:notes_app/pages/note_detail.dart';
-import 'package:notes_app/pages/search_note.dart';
+import 'package:notes_app/screens/note_detail_screen.dart';
+import 'package:notes_app/screens/search_note_screen.dart';
+
+
 import 'package:notes_app/widgets/main_menu.dart';
 import 'package:notes_app/widgets/note_list.dart';
 import 'package:sqflite/sqflite.dart';
 
-class MainNotesPage extends StatefulWidget {
-  const MainNotesPage({Key key}) : super(key: key);
+class NotesScreen extends StatefulWidget {
+  const NotesScreen({Key key}) : super(key: key);
 
   @override
-  State<StatefulWidget> createState() => MainNotesPageState();
+  State<StatefulWidget> createState() => NotesScreenState();
 }
 
-class MainNotesPageState extends State<MainNotesPage> {
+class NotesScreenState extends State<NotesScreen> {
 
   Database noteDatabase;
   List<Note> noteList;
   int axisCount = 2;
 
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   print("Fdgsdg");
-  //    // _deleteDatabase();
-  // }
-  // void _deleteDatabase() async {
-  //   Directory directory = await getApplicationDocumentsDirectory();
-  //   String path = directory.path + 'notes.db';
-  //   deleteDatabase(path);
-  // }
+  @override
+  void initState() {
+    super.initState();
+    NoteDatabase.initializeDatabase('notes').then((value) => noteDatabase = value);
+  }
+
 
   @override
   Widget build(BuildContext context) {
-    updateListView();
     return Scaffold(
       appBar: _buildAppBar(),
       drawer: const MainMenu(),
-      body: noteList == null || noteList == [] || noteList.isEmpty ? Container(
-        color: Colors.white,
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Text('Нажми на кнопку ниже чтобы добавить первую заметку!',
-                style: Theme.of(context).textTheme.bodyText2
+      body: FutureBuilder<List<Note>>(
+        future: NoteDatabase.getNoteList(noteDatabase),
+        builder: (context, noteListSnapshot) {
+          if(noteListSnapshot.data == null) {
+            return Center(
+              child: Text("Загрузка...",
+                  style: Theme.of(context).textTheme.bodyText2
+              ),
+            );
+          }
+          noteList = noteListSnapshot.data;
+          return noteList.isEmpty ? Container(
+            margin: const EdgeInsets.all(20),
+            child: Center(
+              child: Text("У вас пока нет заметок! Нажми на кнопку ниже чтобы добавить первую заметку!",
+                  style: Theme.of(context).textTheme.bodyText2),
             ),
-          )
-        )
-      ) : Container(
-          color: Colors.white,
-          child: NoteList(notes: noteList, axisCount: axisCount, navigateToDetail: navigateToDetail)
+          ) : Container(
+              color: Colors.white,
+              child: NoteList(
+                  notes: noteList,
+                  axisCount: axisCount,
+                  navigateToDetail: navigateToDetail
+              )
+          );
+        },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          navigateToDetail(Note(title: 'Без названия', date: '', description: '', priority: Colors.green, color: 0, isTrash: false));
-        },
-        tooltip: 'Добавить заметку',
-        shape: const CircleBorder(
-            side: BorderSide(color: Colors.black, width: 2)),
-        child: const Icon(Icons.add, color: Colors.black),
-        backgroundColor: Colors.white,
-      ),
+          onPressed: () {
+            navigateToDetail(Note(title: 'Без названия', date: '', description: '', priority: Colors.green, color: 0, isTrash: false));
+          },
+          tooltip: 'Добавить заметку',
+          shape: const CircleBorder(
+          side: BorderSide(color: Colors.black, width: 2)),
+          child: const Icon(Icons.add, color: Colors.black),
+          backgroundColor: Colors.white,
+      )
     );
   }
 
@@ -82,7 +91,7 @@ class MainNotesPageState extends State<MainNotesPage> {
           ),
           onPressed: () async {
             final Note result = await showSearch(
-                context: context, delegate: NotesSearch(notes: noteList));
+                context: context, delegate: NotesSearchScreen(notes: noteList));
             if (result != null) {
               navigateToDetail(result);
             }
@@ -118,7 +127,7 @@ class MainNotesPageState extends State<MainNotesPage> {
   // }
 
   void navigateToDetail(Note note) async {
-    bool result = await Navigator.push(context, MaterialPageRoute(builder: (context) => NoteDetail(note, noteDatabase)));
+    bool result = await Navigator.push(context, MaterialPageRoute(builder: (context) => NoteDetailScreen(note, noteDatabase)));
 
     if (result == true) {
       updateListView();

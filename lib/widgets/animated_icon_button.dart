@@ -9,18 +9,13 @@ class AnimatedIconButton extends StatefulWidget {
   AnimatedIconButton({Key key, this.isStart, this.onPressed}) : super(key: key);
 
   @override
-  State<AnimatedIconButton> createState() => _AnimatedIconButtonState(isStart, onPressed);
+  State<AnimatedIconButton> createState() => _AnimatedIconButtonState();
 }
 
 class _AnimatedIconButtonState extends State<AnimatedIconButton>
         with SingleTickerProviderStateMixin{
   Animation<double> animation;
   AnimationController controller;
-
-  final bool isStart;
-  final Function onTap;
-
-  _AnimatedIconButtonState(this.isStart, this.onTap);
 
   @override
   void initState() {
@@ -34,7 +29,7 @@ class _AnimatedIconButtonState extends State<AnimatedIconButton>
     setRotation(90);
     print(controller.value);
 
-    if(isStart){
+    if(widget.isStart){
       controller.forward(from: 0);
     }
   }
@@ -60,7 +55,7 @@ class _AnimatedIconButtonState extends State<AnimatedIconButton>
             splashRadius: 22,
             icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
             onPressed: () {
-              onTap();
+              widget.onPressed();
             }),
         builder: (context, child) => Transform.rotate(
           angle: animation.value,

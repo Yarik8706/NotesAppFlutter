@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:notes_app/database/note_database.dart';
 import 'package:notes_app/modal_class/notes.dart';
-import 'package:notes_app/pages/note_detail.dart';
+import 'package:notes_app/screens/note_detail_screen.dart';
 import 'package:notes_app/widgets/main_menu.dart';
 import 'package:notes_app/widgets/note_list.dart';
 import 'package:sqflite/sqflite.dart';
@@ -15,35 +15,45 @@ class TrashNotesPage extends StatefulWidget {
 
 class _TrashNotesPageState extends State<TrashNotesPage> {
   Database noteDatabase;
-  List<Note> noteList;
+  List<Note> noteList = [];
   int axisCount = 2;
 
   @override
   Widget build(BuildContext context) {
-    if (noteDatabase == null) {
-      noteList = [];
-      updateListView();
-    }
+    NoteDatabase.initializeDatabase('trash_notes').then((database) {
+      noteDatabase = database;
+    });
     return Scaffold(
       appBar: _buildAppBar(),
       drawer: const MainMenu(),
-      body: noteList.isEmpty ? Container(
-          color: Colors.white,
-          child: Center(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
+      body: FutureBuilder<List<Note>>(
+        future: NoteDatabase.getNoteList(noteDatabase),
+        builder: (context, noteListSnapshot) {
+          if(noteListSnapshot.data == null) {
+            return Center(
+              child: Text("Загрузка...",
+                  style: Theme.of(context).textTheme.bodyText2
+              ),
+            );
+          }
+          noteList = noteListSnapshot.data;
+          return noteList.isEmpty ? Container(
+            margin: const EdgeInsets.all(20),
+            child: Center(
                 child: Text('Корзина пуста!',
                     style: Theme.of(context).textTheme.bodyText2
-                ),
+                )
+            )
+          ) : Container(
+              color: Colors.white,
+              child: NoteList(
+                  notes: noteList,
+                  axisCount: axisCount,
+                  navigateToDetail: navigateToDetail
               )
-          )
-      ) : Container(
-          color: Colors.white,
-          child: NoteList(
-              notes: noteList,
-              axisCount: axisCount,
-              navigateToDetail: navigateToDetail
-          ))
+          );
+        },
+      ),
     );
   }
 
@@ -54,54 +64,50 @@ class _TrashNotesPageState extends State<TrashNotesPage> {
       elevation: 0,
       backgroundColor: Colors.white,
       actions: [
-        noteList.isEmpty ? Container() : IconButton(
-          splashRadius: 22,
-          icon: const Icon(
-            Icons.delete_sweep,
-            color: Colors.black,
-          ),
-          onPressed: () {
-            setState(() {
-              showDeleteDialog(context);
-            });
-          },
-        ),
-        noteList.isEmpty ? Container() : IconButton(
-          splashRadius: 22,
-          icon: Icon(
-            axisCount == 2 ? Icons.list : Icons.grid_on,
-            color: Colors.black,
-          ),
-          onPressed: () {
-            setState(() {
-              axisCount = axisCount == 2 ? 4 : 2;
-            });
+        FutureBuilder(
+          future: NoteDatabase.getNoteList(noteDatabase),
+          builder: (context, noteListSnapshot) {
+            if(noteListSnapshot.data == null) {
+              return Container();
+            }
+            return Row(
+              children: [
+                IconButton(
+                  splashRadius: 22,
+                  icon: const Icon(
+                    Icons.delete_sweep,
+                    color: Colors.black,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      showDeleteDialog(context);
+                    });
+                  },
+                ),
+                IconButton(
+                  splashRadius: 22,
+                  icon: Icon(
+                    axisCount == 2 ? Icons.list : Icons.grid_on,
+                    color: Colors.black,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      axisCount = axisCount == 2 ? 4 : 2;
+                    });
+                  },
+                )
+              ],
+            );
           },
         )
       ],
     );
   }
 
-  void updateListView() {
-    NoteDatabase.initializeDatabase('trash_notes').then((database) {
-      noteDatabase = database;
-      Future<List<Note>> noteListFuture = NoteDatabase.getNoteList(database);
-      noteListFuture.then((newNoteList) {
-        setState(() {
-          noteList = newNoteList;
-        });
-      });
-    });
-  }
-
   void navigateToDetail(Note note) async {
     bool result = await Navigator.push(
-        context, MaterialPageRoute(builder: (context) => NoteDetail(note, noteDatabase))
+        context, MaterialPageRoute(builder: (context) => NoteDetailScreen(note, noteDatabase))
     );
-
-    if (result == true) {
-      updateListView();
-    }
   }
 
   void showDeleteDialog(BuildContext context) {

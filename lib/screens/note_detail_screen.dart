@@ -8,17 +8,17 @@ import 'package:notes_app/widgets/priority_picker.dart';
 import 'package:notes_app/widgets/color_picker.dart';
 import 'package:sqflite/sqflite.dart';
 
-class NoteDetail extends StatefulWidget {
+class NoteDetailScreen extends StatefulWidget {
   final Note note;
   final Database db;
 
-  const NoteDetail(this.note, this.db, {Key key}) : super(key: key);
+  const NoteDetailScreen(this.note, this.db, {Key key}) : super(key: key);
 
   @override
-  State<StatefulWidget> createState() => NoteDetailState(note, db);
+  State<StatefulWidget> createState() => NoteDetailScreenState(note, db);
 }
 
-class NoteDetailState extends State<NoteDetail> {
+class NoteDetailScreenState extends State<NoteDetailScreen> {
 
   Note note;
   TextEditingController titleController = TextEditingController();
@@ -28,7 +28,7 @@ class NoteDetailState extends State<NoteDetail> {
 
   bool _isEditTitle = false;
 
-  NoteDetailState(this.note, this.notesDatabase);
+  NoteDetailScreenState(this.note, this.notesDatabase);
 
   @override
   void initState() {
@@ -81,6 +81,7 @@ class NoteDetailState extends State<NoteDetail> {
                           child: Padding(
                             padding: const EdgeInsets.all(16.0),
                             child: TextField(
+                              cursorColor: Colors.grey,
                               keyboardType: TextInputType.multiline,
                               maxLines: 10,
                               maxLength: 500,
